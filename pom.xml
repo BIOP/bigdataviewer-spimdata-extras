@@ -78,7 +78,7 @@
 
 	<ciManagement>
 		<system>Travis CI</system>
-		<url>https://travis-ci.com/NicoKiaru/bigdataviewer-spimdata-extras</url>
+		<url>https://travis-ci.org/NicoKiaru/bigdataviewer-spimdata-extras</url>
 	</ciManagement>
 
 	<properties>
