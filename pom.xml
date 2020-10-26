@@ -87,6 +87,9 @@
 		<license.licenseName>gpl_v3</license.licenseName>
 		<license.copyrightOwners>EPFL</license.copyrightOwners>
 		<scijava.app.directory>C:/Fiji_template</scijava.app.directory>
+
+		<!-- NB: Deploy releases to the SciJava Maven repository. -->
+		<releaseProfiles>deploy-to-scijava</releaseProfiles>
 	</properties>
 
 	<repositories>
