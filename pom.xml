@@ -64,24 +64,26 @@
 	</mailingLists>
 
 	<scm>
-		<connection>scm:git:git://github.com/</connection>
-		<developerConnection>scm:git:git@github.com:</developerConnection>
+		<connection>scm:git:git://github.com/NicoKiaru/bigdataviewer-spimdata-extras</connection>
+		<developerConnection>scm:git:git@github.com:NicoKiaru/bigdataviewer-spimdata-extras</developerConnection>
+		<url>https://github.com/NicoKiaru/bigdataviewer-spimdata-extras</url>
 		<tag>HEAD</tag>
-		<url>https://github.com/</url>
+
 	</scm>
-	
+
 	<issueManagement>
 		<system>GitHub Issues</system>
-		<url></url>
+		<url>https://github.com/NicoKiaru/bigdataviewer-spimdata-extras/issues</url>
 	</issueManagement>
 
 	<ciManagement>
-		<system>None</system>
+		<system>Travis CI</system>
+		<url>https://travis-ci.com/NicoKiaru/bigdataviewer-spimdata-extras</url>
 	</ciManagement>
 
 	<properties>
-		<package-name>ch.epfl.biop.spimdata</package-name>
-		<main-class>ch.epfl.biop.spimdata.DummyCommand</main-class>
+		<package-name>spimdata.util</package-name>
+		<main-class>spimdata.util.DummyCommand</main-class>
 		<license.licenseName>gpl_v3</license.licenseName>
 		<license.copyrightOwners>EPFL</license.copyrightOwners>
 		<scijava.app.directory>C:/Fiji_template</scijava.app.directory>
