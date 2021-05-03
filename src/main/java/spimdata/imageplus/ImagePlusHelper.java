@@ -14,7 +14,6 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.cache.Cache;
 import net.imglib2.cache.img.CachedCellImg;
 import net.imglib2.cache.img.LoadedCellCacheLoader;
-import net.imglib2.cache.img.optional.CacheOptions;
 import net.imglib2.cache.ref.SoftRefLoaderCache;
 import net.imglib2.img.Img;
 import net.imglib2.img.basictypeaccess.AccessFlags;
