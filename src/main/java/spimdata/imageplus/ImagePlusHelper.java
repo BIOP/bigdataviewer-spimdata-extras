@@ -21,7 +21,6 @@
  */
 package spimdata.imageplus;
 
-import bdv.tools.brightness.ConverterSetup;
 import bdv.viewer.SourceAndConverter;
 import ij.CompositeImage;
 import ij.ImagePlus;
@@ -36,6 +35,8 @@ import net.imglib2.cache.Cache;
 import net.imglib2.cache.img.CachedCellImg;
 import net.imglib2.cache.img.LoadedCellCacheLoader;
 import net.imglib2.cache.ref.SoftRefLoaderCache;
+import net.imglib2.display.ColorConverter;
+import net.imglib2.display.LinearRange;
 import net.imglib2.img.Img;
 import net.imglib2.img.basictypeaccess.AccessFlags;
 import net.imglib2.img.basictypeaccess.ArrayDataAccessFactory;
@@ -258,139 +259,163 @@ public class ImagePlusHelper {
     }
 
     /**
-     *
      * @param sac source
      * @param mipmapLevel mipmap level of the source to wrap
-     * @param cs converter of the source
      * @param beginTimePoint start timepoint (included)
-     * @param endTimePoint  end timepoint (excluded)
-     * @param ignoreSourceLut useful if the converter is not a color converter (more complicated or RGB source)
+     * @param nTimePoints number of timepoints exported
      * @return wrapped ImagePlus
      */
-
-    public static ImagePlus wrap(SourceAndConverter sac, ConverterSetup cs, int mipmapLevel, int beginTimePoint, int endTimePoint, boolean ignoreSourceLut) {
+    public static ImagePlus wrap(SourceAndConverter sac, int mipmapLevel, int beginTimePoint, int nTimePoints, int timeStep) {
 
         // Avoids no mip map exception
         mipmapLevel = Math.min(mipmapLevel, sac.getSpimSource().getNumMipmapLevels()-1);
-        RandomAccessibleInterval[] rais = new RandomAccessibleInterval[endTimePoint-beginTimePoint];
-        for (int i=beginTimePoint;i<endTimePoint;i++) {
-            rais[i] = sac.getSpimSource().getSource(i, mipmapLevel);
+
+        RandomAccessibleInterval[] rais = new RandomAccessibleInterval[nTimePoints];
+        int endTimePoint = beginTimePoint + timeStep * nTimePoints;
+        long xSize = 1, ySize = 1, zSize = 1;
+        int i = 0;
+        for (int iTp=beginTimePoint;iTp<endTimePoint;iTp+=timeStep) {
+            if (sac.getSpimSource().isPresent(iTp)) {
+                rais[i] = sac.getSpimSource().getSource(iTp, mipmapLevel);
+                xSize = rais[i].dimension(0);
+                ySize = rais[i].dimension(1);
+                zSize = rais[i].dimension(2);
+                i++;
+                break;
+            }
+        }
+
+        i = 0;
+        for (int iTp=beginTimePoint;iTp<endTimePoint;iTp+=timeStep) {
+            if (sac.getSpimSource().isPresent(iTp)) {
+                rais[i] = sac.getSpimSource().getSource(iTp, mipmapLevel);
+            } else {
+                rais[i] = new ZerosRAI((NumericType) sac.getSpimSource().getType(), new long[]{xSize, ySize, zSize});
+            }
+            i++;
+            //rais[i] = sac.getSpimSource().getSource(iTp, mipmapLevel);
+            //i++;
         }
 
         ImgPlus imgPlus;
         ImagePlus imp;
-        if (true) {
 
-            Img img = (Img)(wrapAsVolatileCachedCellImg(Views.stack(rais), new int[]{(int) rais[0].dimension(0),(int) rais[0].dimension(1),1,1}));
+        Img img = (Img)(wrapAsVolatileCachedCellImg(Views.stack(rais), new int[]{(int) rais[0].dimension(0),(int) rais[0].dimension(1),1,1}));
 
-            imgPlus = new ImgPlus(img,//cacheRAI(Views.stack(raisList)),
-
-            //imgPlus = new ImgPlus(cacheRAI(Views.stack(rais)),
-                sac.getSpimSource().getName(),
-                new AxisType[] { Axes.X, Axes.Y, Axes.Z, Axes.TIME } );
-            imp = ImageJFunctions.wrap(imgPlus, "");
-        } else {
-            imp = ImageJFunctions.wrap(Views.stack(rais), sac.getSpimSource().getName());
-        }
+        imgPlus = new ImgPlus(img,
+            sac.getSpimSource().getName(),
+            new AxisType[] { Axes.X, Axes.Y, Axes.Z, Axes.TIME } );
+        imp = ImageJFunctions.wrap(imgPlus, "");
 
         imp.setTitle(sac.getSpimSource().getName());
 
-        imp.setDimensions(1, (int) rais[0].dimension(2), endTimePoint-beginTimePoint); // Set 3 dimension as Z, not as Channel
+        imp.setDimensions(1, (int) rais[0].dimension(2), nTimePoints); // Set 3 dimension as Z, not as Channel
 
-        System.out.println("ignoreSourceLut:"+ignoreSourceLut);
-        System.out.println("cs:"+cs);
         // Simple Color LUT
-        if ((!ignoreSourceLut)&&(cs!=null)&&!(sac.getSpimSource().getType() instanceof ARGBType)) {
-            System.out.println("Settings the settings");
-            ARGBType c = cs.getColor();
-            imp.setLut(LUT.createLutFromColor(new Color(ARGBType.red(c.get()), ARGBType.green(c.get()), ARGBType.blue(c.get()))));
-            imp.setDisplayRange(cs.getDisplayRangeMin(),cs.getDisplayRangeMax());
+        if (!(sac.getSpimSource().getType() instanceof ARGBType)) {
+            if (sac.getConverter() instanceof ColorConverter) {
+                ColorConverter converter = (ColorConverter) sac.getConverter();
+                ARGBType c = converter.getColor();
+                imp.setLut(LUT.createLutFromColor(new Color(ARGBType.red(c.get()), ARGBType.green(c.get()), ARGBType.blue(c.get()))));
+            }
+            if (sac.getConverter() instanceof LinearRange) {
+                LinearRange converter = (LinearRange) sac.getConverter();
+                imp.setDisplayRange(converter.getMin(), converter.getMax());
+            }
         }
 
         return imp;
     }
 
     /**
-     *
      * @param sacs sources
-     * @param csMap converter setup of each sources
      * @param mipmapMap mipmap level of each source
      * @param beginTimePoint start timepoint (included)
-     * @param endTimePoint  end timepoint (excluded)
-     * @param ignoreSourceLut useful if the converter is not a color converter (more complicated or RGB source)
+     * @param nTimePoints number of timepoints exported
      * @return wrapped sources as a multichannel ImagePlus
      */
     public static ImagePlus wrap(List<SourceAndConverter> sacs,
-                                 Map<SourceAndConverter,ConverterSetup> csMap,
                                  Map<SourceAndConverter,Integer> mipmapMap,
                                  int beginTimePoint,
-                                 int endTimePoint,
-                                 boolean ignoreSourceLut) {
+                                 int nTimePoints,
+                                 int timeStep) {
+
 
         if (sacs.size()==1) {
-            return wrap(sacs.get(0), csMap.get(sacs.get(0)), mipmapMap.get(sacs.get(0)), beginTimePoint, endTimePoint, ignoreSourceLut);
+            return wrap(sacs.get(0), mipmapMap.get(sacs.get(0)), beginTimePoint, nTimePoints, timeStep);
         }
 
+        int endTimePoint = beginTimePoint + timeStep * nTimePoints;
         RandomAccessibleInterval[] raisList = new RandomAccessibleInterval[sacs.size()];
 
         for (int c=0;c<sacs.size();c++) {
             SourceAndConverter sac = sacs.get(c);
-            RandomAccessibleInterval[] rais = new RandomAccessibleInterval[endTimePoint-beginTimePoint];
+            RandomAccessibleInterval[] rais = new RandomAccessibleInterval[nTimePoints];
             int mipmapLevel = Math.min(mipmapMap.get(sac), sac.getSpimSource().getNumMipmapLevels()-1); // mipmap level should exist
             long xSize = 1, ySize = 1, zSize = 1;
-            for (int t=beginTimePoint;t<endTimePoint;t++) {
-                if (sac.getSpimSource().isPresent(t)) {
-                    rais[t - beginTimePoint] = sac.getSpimSource().getSource(t, mipmapLevel);
-                    xSize = rais[t-beginTimePoint].dimension(0);
-                    ySize = rais[t-beginTimePoint].dimension(1);
-                    zSize = rais[t-beginTimePoint].dimension(2);
+
+            int i = 0;
+            for (int iTp=beginTimePoint;iTp<endTimePoint;iTp+=timeStep) {
+                if (sac.getSpimSource().isPresent(iTp)) {
+                    rais[i] = sac.getSpimSource().getSource(iTp, mipmapLevel);
+                    xSize = rais[i].dimension(0);
+                    ySize = rais[i].dimension(1);
+                    zSize = rais[i].dimension(2);
+                    i++;
                     break;
                 }
             }
 
-            for (int t=beginTimePoint;t<endTimePoint;t++) {
-                if (sac.getSpimSource().isPresent(t)) {
-                    rais[t - beginTimePoint] = sac.getSpimSource().getSource(t, mipmapLevel);
+            i = 0;
+            for (int iTp=beginTimePoint;iTp<endTimePoint;iTp+=timeStep) {
+                if (sac.getSpimSource().isPresent(iTp)) {
+                    rais[i] = sac.getSpimSource().getSource(iTp, mipmapLevel);
                 } else {
-                    rais[t - beginTimePoint] = new ZerosRAI((NumericType) sac.getSpimSource().getType(), new long[]{xSize, ySize, zSize});
+                    rais[i] = new ZerosRAI((NumericType) sac.getSpimSource().getType(), new long[]{xSize, ySize, zSize});
                 }
+                i++;
             }
-
-            raisList[c] = Views.stack(rais);
+            raisList[c] = Views.stack(rais); // Very inefficient TODO : better perf for time stack
         }
 
-        /*wrapAsVolatileCachedCellImg(raisList, new int[]{(int) raisList[0].dimension(0),
-                                                        (int) raisList[0].dimension(1),
-                                                        1
-                                                        });*/
         Img img = (Img)(wrapAsVolatileCachedCellImg(Views.stack(raisList), new int[]{(int) raisList[0].dimension(0),(int) raisList[0].dimension(1),1,1,1}));
 
         ImgPlus imgPlus = new ImgPlus(img,//cacheRAI(Views.stack(raisList)),
                 "",
                 new AxisType[] { Axes.X, Axes.Y, Axes.Z, Axes.TIME, Axes.CHANNEL } );
         ImagePlus imp = HyperStackConverter.toHyperStack(ImgToVirtualStack.wrap(imgPlus),
-                sacs.size(), (int) raisList[0].dimension(2), endTimePoint-beginTimePoint, "composite");
+                sacs.size(), (int) raisList[0].dimension(2), nTimePoints, "composite");
 
-        if ((!ignoreSourceLut)) {
-            LUT[] luts = new LUT[sacs.size()];
-            for (SourceAndConverter sac:sacs) {
-                if ((csMap.get(sac)!=null)&&!(sac.getSpimSource().getType() instanceof ARGBType)) {
-                    ARGBType c = csMap.get(sac).getColor();
-                    LUT lut;
-                    if (c!=null) {
-                        lut = LUT.createLutFromColor(new Color(ARGBType.red(c.get()), ARGBType.green(c.get()), ARGBType.blue(c.get())));
-                    } else {
-                        lut = LUT.createLutFromColor(new Color(ARGBType.red(255), ARGBType.green(255), ARGBType.blue(255)));
-                    }
-                    luts[sacs.indexOf(sac)] = lut;
-                    imp.setC(sacs.indexOf(sac)+1);
-                    imp.getProcessor().setLut(lut);
-                    imp.setDisplayRange(csMap.get(sac).getDisplayRangeMin(),csMap.get(sac).getDisplayRangeMax());
+        LUT[] luts = new LUT[sacs.size()];
+        for (SourceAndConverter sac:sacs) {
+            if (!(sac.getSpimSource().getType() instanceof ARGBType)) {
+                LUT lut;
+                if (sac.getConverter() instanceof ColorConverter) {
+                    ColorConverter converter = (ColorConverter) sac.getConverter();
+                    ARGBType c = converter.getColor();
+                    lut = LUT.createLutFromColor(new Color(ARGBType.red(c.get()), ARGBType.green(c.get()), ARGBType.blue(c.get())));
+                } else {
+                    lut = LUT.createLutFromColor(new Color(ARGBType.red(255), ARGBType.green(255), ARGBType.blue(255)));
+                }
+
+                luts[sacs.indexOf(sac)] = lut;
+                imp.setC(sacs.indexOf(sac)+1);
+                imp.getProcessor().setLut(lut);
+
+                if (sac.getConverter() instanceof LinearRange) {
+                    LinearRange converter = (LinearRange) sac.getConverter();
+                    imp.setDisplayRange(converter.getMin(), converter.getMax());
                 }
             }
-            ((CompositeImage)imp).setLuts(luts);
-
         }
+
+        boolean oneIsNull = false;
+        for (int c = 0;c<luts.length;c++) {
+            if (luts[c] == null) {
+                oneIsNull = true;
+            }
+        }
+        if (!oneIsNull) ((CompositeImage)imp).setLuts(luts);
 
         return imp;
     }
