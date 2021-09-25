@@ -11,7 +11,7 @@
 
 	<groupId>ch.epfl.biop</groupId>
 	<artifactId>bigdataviewer-spimdata-extras</artifactId>
-	<version>0.1.3-SNAPSHOT</version>
+	<version>0.1.3</version>
 
 	<name>Spimdata Extra Settings</name>
 	<description>Repo containing extra settings that can be stored in spimdata file format</description>
@@ -64,7 +64,7 @@
 		<connection>scm:git:git://github.com/NicoKiaru/bigdataviewer-spimdata-extras</connection>
 		<developerConnection>scm:git:git@github.com:NicoKiaru/bigdataviewer-spimdata-extras</developerConnection>
 		<url>https://github.com/NicoKiaru/bigdataviewer-spimdata-extras</url>
-		<tag>HEAD</tag>
+		<tag>bigdataviewer-spimdata-extras-0.1.3</tag>
 
 	</scm>
 
