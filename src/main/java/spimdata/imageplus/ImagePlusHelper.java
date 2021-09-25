@@ -114,9 +114,10 @@ public class ImagePlusHelper {
         cal.pixelHeight = voxY;
         cal.pixelDepth = voxZ;
 
-        cal.xOrigin = 1; // Ignored if set to zero
-        cal.yOrigin = 1;
-        cal.zOrigin = 1;
+        // We assume orthonormality
+        cal.xOrigin = m[3]/voxX; // Ignored if set to zero
+        cal.yOrigin = m[7]/voxY;
+        cal.zOrigin = m[11]/voxZ;
 
         imp.setCalibration(cal);
 
@@ -151,51 +152,6 @@ public class ImagePlusHelper {
                 }
                 at3D.set(m);
 
-                double[] offsetLocalCoordinates =
-                        {imp.getCalibration().xOrigin-1,
-                         imp.getCalibration().yOrigin-1,
-                         imp.getCalibration().zOrigin-1};
-
-                double[] offsetGlobalCoordinates = new double[3];
-
-                double m03 = at3D.get(0,3);
-                double m13 = at3D.get(1,3);
-                double m23 = at3D.get(2,3);
-
-                at3D.translate(-m03, -m13, -m23);
-
-                at3D.apply(offsetLocalCoordinates, offsetGlobalCoordinates);
-
-                at3D.translate(
-                        m03 - offsetGlobalCoordinates[0],
-                        m13 - offsetGlobalCoordinates[1],
-                        m23 - offsetGlobalCoordinates[2]
-                        );
-
-                m03 = at3D.get(0,3);
-                m13 = at3D.get(1,3);
-                m23 = at3D.get(2,3);
-
-
-                // Size
-                double voxX = Math.sqrt(m[0]*m[0]+m[4]*m[4]+m[8]*m[8]);
-                double voxY = Math.sqrt(m[1]*m[1]+m[5]*m[5]+m[9]*m[9]);
-                double voxZ = Math.sqrt(m[2]*m[2]+m[6]*m[6]+m[10]*m[10]);
-
-                double scaleX = imp.getCalibration().pixelWidth / voxX;
-                double scaleY = imp.getCalibration().pixelHeight / voxY ;
-                double scaleZ = imp.getCalibration().pixelDepth / voxZ;
-
-                m[0]*=scaleX;m[4]*=scaleX;m[8]*=scaleX;
-                m[1]*=scaleY;m[5]*=scaleY;m[9]*=scaleY;
-                m[2]*=scaleZ;m[6]*=scaleZ;m[10]*=scaleZ;
-
-                m[3] = m03;
-                m[7] = m13;
-                m[11] = m23;
-
-                at3D.set(m);
-
                 return at3D;
             } else {
                // Affine transform not found in ImagePlus Info
@@ -215,7 +171,6 @@ public class ImagePlusHelper {
                     );
             return at3D;
         }
-
 
         // Default : returns identity
         AffineTransform3D at3D = new AffineTransform3D();
