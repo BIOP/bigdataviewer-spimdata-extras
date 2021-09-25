@@ -61,21 +61,21 @@
 	</mailingLists>
 
 	<scm>
-		<connection>scm:git:git://github.com/NicoKiaru/bigdataviewer-spimdata-extras</connection>
-		<developerConnection>scm:git:git@github.com:NicoKiaru/bigdataviewer-spimdata-extras</developerConnection>
-		<url>https://github.com/NicoKiaru/bigdataviewer-spimdata-extras</url>
+		<connection>scm:git:git://github.com/BIOP/bigdataviewer-spimdata-extras</connection>
+		<developerConnection>scm:git:git@github.com:BIOP/bigdataviewer-spimdata-extras</developerConnection>
+		<url>https://github.com/BIOP/bigdataviewer-spimdata-extras</url>
 		<tag>HEAD</tag>
 
 	</scm>
 
 	<issueManagement>
 		<system>GitHub Issues</system>
-		<url>https://github.com/NicoKiaru/bigdataviewer-spimdata-extras/issues</url>
+		<url>https://github.com/BIOP/bigdataviewer-spimdata-extras/issues</url>
 	</issueManagement>
 
 	<ciManagement>
 		<system>GitHub Actions</system>
-		<url>https://github.com/NicoKiaru/bigdataviewer-spimdata-extras/actions</url>
+		<url>https://github.com/BIOP/bigdataviewer-spimdata-extras/actions</url>
 	</ciManagement>
 
 	<properties>
