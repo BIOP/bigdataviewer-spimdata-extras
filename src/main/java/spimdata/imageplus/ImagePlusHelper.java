@@ -115,9 +115,9 @@ public class ImagePlusHelper {
         cal.pixelDepth = voxZ;
 
         // We assume orthonormality
-        cal.xOrigin = m[3]/voxX; // Ignored if set to zero
-        cal.yOrigin = m[7]/voxY;
-        cal.zOrigin = m[11]/voxZ;
+        cal.xOrigin = -m[3]/voxX; // Ignored if set to zero
+        cal.yOrigin = -m[7]/voxY;
+        cal.zOrigin = -m[11]/voxZ;
 
         imp.setCalibration(cal);
 

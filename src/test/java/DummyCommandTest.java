@@ -28,7 +28,7 @@ public class DummyCommandTest {
     public void run() throws Exception {
         // Arrange
         // create the ImageJ application context with all available services
-        final ImageJ ij = new ImageJ();
+        //final ImageJ ij = new ImageJ();
 
         // Act
 
