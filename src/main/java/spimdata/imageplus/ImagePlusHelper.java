@@ -65,6 +65,7 @@ import static net.imglib2.type.PrimitiveType.LONG;
 import static net.imglib2.type.PrimitiveType.SHORT;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -106,18 +107,34 @@ public class ImagePlusHelper {
         Calibration cal = new Calibration();
 
         double[] m = at3D.getRowPackedCopy();
-        double voxX = Math.sqrt(m[0]*m[0]+m[4]*m[4]+m[8]*m[8]);
-        double voxY = Math.sqrt(m[1]*m[1]+m[5]*m[5]+m[9]*m[9]);
-        double voxZ = Math.sqrt(m[2]*m[2]+m[6]*m[6]+m[10]*m[10]);
+        double[] voxelSizes = new double[ 3 ];
+        for ( int d = 0; d < 3; d++ )
+        {
+            voxelSizes[ d ] = Math.sqrt( m[ d ] * m[ d ] + m[ d + 4 ] * m[ d + 4 ] + m[ d + 8 ] * m[ d + 8 ] );
+        }
 
-        cal.pixelWidth = voxX;
-        cal.pixelHeight = voxY;
-        cal.pixelDepth = voxZ;
+        double[] voxelSigns = new double[ 3 ];
+        for ( int d = 0; d < 3; d++ )
+        {
+            // find the sign of the largest entry in the column
+            // (not sure if there is a better way)
+            final ArrayList< Double > entries = new ArrayList<>();
+            entries.add( m[ d ] );
+            entries.add( m[ d + 4 ] );
+            entries.add( m[ d + 8 ] );
+            entries.sort( ( o1, o2 ) -> Math.abs( o1 ) < Math.abs( o2 ) ? 1 : -1 );
+            voxelSigns[ d ] = Math.signum( entries.get( 0 ) );
+        }
 
-        // We assume orthonormality
-        cal.xOrigin = m[3]/voxX; // Ignored if set to zero
-        cal.yOrigin = m[7]/voxY;
-        cal.zOrigin = m[11]/voxZ;
+        cal.pixelWidth = voxelSigns[ 0 ] * voxelSizes[ 0 ];
+        cal.pixelHeight = voxelSigns[ 1 ] * voxelSizes[ 1 ];
+        cal.pixelDepth = voxelSigns[ 2 ] * voxelSizes[ 2 ];
+
+        final double[] origin = new double[ 3 ];
+        at3D.inverse().apply( new double[ 3 ], origin );
+        cal.xOrigin = origin[ 0 ];
+        cal.yOrigin = origin[ 1 ];
+        cal.zOrigin = origin[ 2 ];
 
         imp.setCalibration(cal);
 
