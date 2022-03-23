@@ -61,7 +61,7 @@
 	</mailingLists>
 
 	<scm>
-		<connection>scm:git:git://github.com/BIOP/bigdataviewer-spimdata-extras</connection>
+		<connection>scm:git:https://github.com/BIOP/bigdataviewer-spimdata-extras</connection>
 		<developerConnection>scm:git:git@github.com:BIOP/bigdataviewer-spimdata-extras</developerConnection>
 		<url>https://github.com/BIOP/bigdataviewer-spimdata-extras</url>
 		<tag>HEAD</tag>
