@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>31.1.0</version>
+		<version>32.0.0-beta-4</version>
 		<relativePath />
 	</parent>
 
@@ -86,6 +86,9 @@
 		<scijava.app.directory>C:/Fiji_template</scijava.app.directory>
 		<license.excludes>**/resources/**</license.excludes>
 
+		<ui-behaviour.version>2.0.6</ui-behaviour.version>
+		<bigdataviewer-core.version>10.4.1</bigdataviewer-core.version>
+		<bigdataviewer-vistools.version>1.0.0-beta-30</bigdataviewer-vistools.version>
 		<!-- NB: Deploy releases to the SciJava Maven repository. -->
 		<releaseProfiles>sign,deploy-to-scijava</releaseProfiles>
 	</properties>
@@ -112,8 +115,16 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+			<groupId>org.scijava</groupId>
+			<artifactId>ui-behaviour</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>sc.fiji</groupId>
 			<artifactId>bigdataviewer-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>sc.fiji</groupId>
+			<artifactId>bigdataviewer-vistools</artifactId>
 		</dependency>
 	</dependencies>
 </project>
