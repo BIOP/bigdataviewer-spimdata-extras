@@ -40,6 +40,8 @@ import mpicbg.spim.data.sequence.TimePoints;
 import mpicbg.spim.data.sequence.ViewId;
 import net.imglib2.FinalDimensions;
 import net.imglib2.realtransform.AffineTransform3D;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import spimdata.util.Displaysettings;
 
 import java.io.File;
@@ -47,19 +49,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class SpimDataFromImagePlusGetter implements Runnable,
-	Function<ImagePlus, AbstractSpimData>
+	Function<ImagePlus, AbstractSpimData<?>>
 {
 
-	static Consumer<String> errlog = (str) -> System.err.println(
-		SpimDataFromImagePlusGetter.class.getSimpleName() + " ERROR : " + str);
-
-	public SpimDataFromImagePlusGetter() {
-
-	}
+	static final private Logger logger = LoggerFactory.getLogger(
+		SpimDataFromImagePlusGetter.class);
 
 	@Override
 	public void run() {}
@@ -74,7 +71,7 @@ public class SpimDataFromImagePlusGetter implements Runnable,
 			case ImagePlus.COLOR_RGB:
 				break;
 			default:
-				errlog.accept(imp.getShortTitle() +
+				logger.error("Error in image " + imp.getShortTitle() +
 					": Only 8, 16, 32-bit images and RGB images are supported currently!");
 				return null;
 		}

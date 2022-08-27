@@ -47,7 +47,7 @@ import mpicbg.spim.data.generic.sequence.ImgLoaderHint;
 import mpicbg.spim.data.generic.sequence.TypedBasicImgLoader;
 
 /**
- * ImageLoader for ImagePlus, non virtual A timeshift can be specified compared
+ * ImageLoader for ImagePlus, non-virtual A timeshift can be specified compared
  * to the origin see {@link VirtualStackImageLoaderTimeShifted} for more
  * information
  *

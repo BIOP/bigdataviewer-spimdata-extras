@@ -60,7 +60,7 @@ import java.util.function.Function;
 /**
  * ImageLoader backed by a ImagePlus. The ImagePlus may be virtual and in
  * contrast to the imglib2 wrappers, we do not try to load all slices into
- * memory. Instead slices are stored in {@link VolatileGlobalCellCache}. Use
+ * memory. Instead, slices are stored in {@link VolatileGlobalCellCache}. Use
  * createFloatInstance(ImagePlus), createUnsignedByteInstance(ImagePlus) or
  * createUnsignedShortInstance(ImagePlus) depending on the ImagePlus pixel type.
  * When loading images ({@link #getSetupImgLoader(int)},

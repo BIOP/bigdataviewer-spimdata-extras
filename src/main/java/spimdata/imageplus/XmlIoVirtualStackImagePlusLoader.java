@@ -28,6 +28,11 @@ import mpicbg.spim.data.XmlHelpers;
 import mpicbg.spim.data.generic.sequence.AbstractSequenceDescription;
 import mpicbg.spim.data.generic.sequence.ImgLoaderIo;
 import mpicbg.spim.data.generic.sequence.XmlIoBasicImgLoader;
+import net.imglib2.Volatile;
+import net.imglib2.img.basictypeaccess.array.ArrayDataAccess;
+import net.imglib2.img.basictypeaccess.volatiles.VolatileAccess;
+import net.imglib2.type.NativeType;
+import net.imglib2.type.numeric.NumericType;
 import org.jdom2.Element;
 
 import java.io.File;
@@ -37,8 +42,8 @@ import static mpicbg.spim.data.XmlKeys.IMGLOADER_FORMAT_ATTRIBUTE_NAME;
 @ImgLoaderIo(
 	format = "spimreconstruction.biop_virtualstackimageplusimageloader",
 	type = VirtualStackImageLoaderTimeShifted.class)
-public class XmlIoVirtualStackImagePlusLoader implements
-	XmlIoBasicImgLoader<VirtualStackImageLoaderTimeShifted>
+public class XmlIoVirtualStackImagePlusLoader<T extends NativeType<T>, V extends Volatile<T> & NativeType<V>, A extends VolatileAccess>
+	implements XmlIoBasicImgLoader<VirtualStackImageLoaderTimeShifted<T, V, A>>
 {
 
 	final public static String IMAGEPLUS_FILEPATH_TAG = "imageplus_filepath";
@@ -69,7 +74,7 @@ public class XmlIoVirtualStackImagePlusLoader implements
 
 		ImagePlus imp = IJ.openImage(imagePlusFilePath);
 
-		final VirtualStackImageLoaderTimeShifted imgLoader;
+		final VirtualStackImageLoaderTimeShifted<?, ?, ?> imgLoader;
 
 		{
 			switch (imp.getType()) {

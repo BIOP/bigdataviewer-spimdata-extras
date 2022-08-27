@@ -50,7 +50,10 @@ import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.NumericType;
-import net.imglib2.type.numeric.integer.*;
+import net.imglib2.type.numeric.integer.GenericByteType;
+import net.imglib2.type.numeric.integer.GenericIntType;
+import net.imglib2.type.numeric.integer.GenericLongType;
+import net.imglib2.type.numeric.integer.GenericShortType;
 import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Intervals;
@@ -152,7 +155,7 @@ public class ImagePlusHelper {
 		info = info.replaceAll(regexAffineTransform3D, "");
 
 		// Appends matrix data
-		info += at3D.toString() + "\n";
+		info += at3D + "\n";
 
 		imp.setProperty("Info", info);
 
@@ -170,7 +173,7 @@ public class ImagePlusHelper {
 				// Looks good, we have something that looks like an affine transform
 				double[] m = new double[12];
 				for (int i = 0; i < 12; i++) {
-					m[i] = Double.valueOf(matcher.group(i + 2));
+					m[i] = Double.parseDouble(matcher.group(i + 2));
 				}
 				at3D.set(m);
 
@@ -195,8 +198,7 @@ public class ImagePlusHelper {
 		}
 
 		// Default : returns identity
-		AffineTransform3D at3D = new AffineTransform3D();
-		return at3D;
+		return new AffineTransform3D();
 	}
 
 	/**
@@ -228,7 +230,7 @@ public class ImagePlusHelper {
 			Matcher matcher = pattern.matcher(imp.getInfoProperty());
 			if (matcher.find()) {
 				// Looks good, we have something that looks like an affine transform
-				int timeOrigin = Integer.valueOf(matcher.group(2));
+				int timeOrigin = Integer.parseInt(matcher.group(2));
 				return timeOrigin;
 			}
 		}
@@ -243,15 +245,17 @@ public class ImagePlusHelper {
 	 * @param timeStep steps between each timepoint resampled
 	 * @return wrapped ImagePlus
 	 */
-	public static ImagePlus wrap(SourceAndConverter sac, int mipmapLevel,
-		int beginTimePoint, int nTimePoints, int timeStep)
+	public static <T extends NativeType<T> & NumericType<T>> ImagePlus wrap(
+		SourceAndConverter<T> sac, int mipmapLevel, int beginTimePoint,
+		int nTimePoints, int timeStep)
 	{
 
 		// Avoids no mip map exception
 		mipmapLevel = Math.min(mipmapLevel, sac.getSpimSource()
 			.getNumMipmapLevels() - 1);
 
-		RandomAccessibleInterval[] rais = new RandomAccessibleInterval[nTimePoints];
+		RandomAccessibleInterval<T>[] rais =
+			new RandomAccessibleInterval[nTimePoints];
 		int endTimePoint = beginTimePoint + timeStep * nTimePoints;
 		long xSize = 1, ySize = 1, zSize = 1;
 		int i = 0;
@@ -261,7 +265,6 @@ public class ImagePlusHelper {
 				xSize = rais[i].dimension(0);
 				ySize = rais[i].dimension(1);
 				zSize = rais[i].dimension(2);
-				i++;
 				break;
 			}
 		}
@@ -272,21 +275,20 @@ public class ImagePlusHelper {
 				rais[i] = sac.getSpimSource().getSource(iTp, mipmapLevel);
 			}
 			else {
-				rais[i] = new ZerosRAI((NumericType) sac.getSpimSource().getType(),
-					new long[] { xSize, ySize, zSize });
+				rais[i] = new ZerosRAI<>(sac.getSpimSource().getType(), new long[] {
+					xSize, ySize, zSize });
 			}
 			i++;
-			// rais[i] = sac.getSpimSource().getSource(iTp, mipmapLevel);
-			// i++;
 		}
 
-		ImgPlus imgPlus;
+		ImgPlus<T> imgPlus;
 		ImagePlus imp;
 
-		Img img = (Img) (wrapAsVolatileCachedCellImg(Views.stack(rais), new int[] {
-			(int) rais[0].dimension(0), (int) rais[0].dimension(1), 1, 1 }));
+		Img<T> img = (Img<T>) (wrapAsVolatileCachedCellImg(Views.stack(rais),
+			new int[] { (int) rais[0].dimension(0), (int) rais[0].dimension(1), 1,
+				1 }));
 
-		imgPlus = new ImgPlus(img, sac.getSpimSource().getName(), new AxisType[] {
+		imgPlus = new ImgPlus<>(img, sac.getSpimSource().getName(), new AxisType[] {
 			Axes.X, Axes.Y, Axes.Z, Axes.TIME });
 		imp = ImageJFunctions.wrap(imgPlus, "");
 
@@ -323,8 +325,9 @@ public class ImagePlusHelper {
 	 * @param timeStep steps between each timepoint resampled
 	 * @return wrapped sources as a multichannel ImagePlus
 	 */
-	public static ImagePlus wrap(List<SourceAndConverter> sacs,
-		Map<SourceAndConverter, Integer> mipmapMap, int beginTimePoint,
+	public static <T extends NumericType<T> & NativeType<T>> ImagePlus wrap(
+		List<SourceAndConverter<T>> sacs,
+		Map<SourceAndConverter<T>, Integer> mipmapMap, int beginTimePoint,
 		int nTimePoints, int timeStep)
 	{
 
@@ -334,12 +337,12 @@ public class ImagePlusHelper {
 		}
 
 		int endTimePoint = beginTimePoint + timeStep * nTimePoints;
-		RandomAccessibleInterval[] raisList = new RandomAccessibleInterval[sacs
+		RandomAccessibleInterval<T>[] raisList = new RandomAccessibleInterval[sacs
 			.size()];
 
 		for (int c = 0; c < sacs.size(); c++) {
-			SourceAndConverter sac = sacs.get(c);
-			RandomAccessibleInterval[] rais =
+			SourceAndConverter<T> sac = sacs.get(c);
+			RandomAccessibleInterval<T>[] rais =
 				new RandomAccessibleInterval[nTimePoints];
 			int mipmapLevel = Math.min(mipmapMap.get(sac), sac.getSpimSource()
 				.getNumMipmapLevels() - 1); // mipmap level should exist
@@ -352,7 +355,6 @@ public class ImagePlusHelper {
 					xSize = rais[i].dimension(0);
 					ySize = rais[i].dimension(1);
 					zSize = rais[i].dimension(2);
-					i++;
 					break;
 				}
 			}
@@ -363,8 +365,8 @@ public class ImagePlusHelper {
 					rais[i] = sac.getSpimSource().getSource(iTp, mipmapLevel);
 				}
 				else {
-					rais[i] = new ZerosRAI((NumericType) sac.getSpimSource().getType(),
-						new long[] { xSize, ySize, zSize });
+					rais[i] = new ZerosRAI<>(sac.getSpimSource().getType(), new long[] {
+						xSize, ySize, zSize });
 				}
 				i++;
 			}
@@ -372,18 +374,18 @@ public class ImagePlusHelper {
 																				// for time stack
 		}
 
-		Img img = (Img) (wrapAsVolatileCachedCellImg(Views.stack(raisList),
+		Img<T> img = (Img<T>) (wrapAsVolatileCachedCellImg(Views.stack(raisList),
 			new int[] { (int) raisList[0].dimension(0), (int) raisList[0].dimension(
 				1), 1, 1, 1 }));
 
-		ImgPlus imgPlus = new ImgPlus(img, // cacheRAI(Views.stack(raisList)),
+		ImgPlus<T> imgPlus = new ImgPlus<>(img, // cacheRAI(Views.stack(raisList)),
 			"", new AxisType[] { Axes.X, Axes.Y, Axes.Z, Axes.TIME, Axes.CHANNEL });
 		ImagePlus imp = HyperStackConverter.toHyperStack(ImgToVirtualStack.wrap(
 			imgPlus), sacs.size(), (int) raisList[0].dimension(2), nTimePoints,
 			"composite");
 
 		LUT[] luts = new LUT[sacs.size()];
-		for (SourceAndConverter sac : sacs) {
+		for (SourceAndConverter<T> sac : sacs) {
 			if (!(sac.getSpimSource().getType() instanceof ARGBType)) {
 				LUT lut;
 				if (sac.getConverter() instanceof ColorConverter) {
@@ -409,9 +411,10 @@ public class ImagePlusHelper {
 		}
 
 		boolean oneIsNull = false;
-		for (int c = 0; c < luts.length; c++) {
-			if (luts[c] == null) {
+		for (LUT lut : luts) {
+			if (lut == null) {
 				oneIsNull = true;
+				break;
 			}
 		}
 		if (!oneIsNull) ((CompositeImage) imp).setLuts(luts);
@@ -419,56 +422,18 @@ public class ImagePlusHelper {
 		return imp;
 	}
 
-	// <T extends NativeType<T>>
-	/*public static< T extends NumericType<T> & NativeType<T>> Img cacheRAI(RandomAccessibleInterval<T> source) {
-	    final int[] cellDimensions = new int[source.numDimensions()];
-	    cellDimensions[0] = (int) (source.dimension(0)); // X
-	    cellDimensions[1] = (int) (source.dimension(1)); // Y
-	
-	    for (int d=2;d<source.numDimensions();d++){ // Z C T
-	        cellDimensions[d] = 1;
-	    }
-	
-	    final DiskCachedCellImgFactory<T> factory = new DiskCachedCellImgFactory<>(Util.getTypeFromInterval(source),
-	            options()
-	            .cellDimensions( cellDimensions )
-	            .cacheType( CacheOptions.CacheType.BOUNDED )
-	            .maxCacheSize( 100 ) );
-	
-	    return factory.create(source, target -> {
-	        Cursor< T > targetCursor = target.localizingCursor();
-	        RandomAccess< T > sourceRandomAccess = source.randomAccess();
-	        // iterate over the input cursor
-	        while ( targetCursor.hasNext())
-	        {
-	            // move input cursor forward
-	            targetCursor.fwd();
-	
-	            // set the output cursor to the position of the input cursor
-	            sourceRandomAccess.setPosition( targetCursor );
-	
-	            // set the value of this pixel of the output image, every Type supports T.set( T type )
-	            targetCursor.get().set( sourceRandomAccess.get() );
-	        }
-	
-	    }, options().initializeCellsAsDirty(true));
-	}*/
-
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public static final <T extends NativeType<T>> RandomAccessibleInterval<T>
+	public static <T extends NativeType<T>> RandomAccessibleInterval<T>
 		wrapAsVolatileCachedCellImg(final RandomAccessibleInterval<T> source,
 			final int[] blockSize)
 	{
 
 		final long[] dimensions = Intervals.dimensionsAsLongArray(source);
-		/*for (long dimension : dimensions) {
-		    System.out.println(dimension);
-		}*/
 
 		final CellGrid grid = new CellGrid(dimensions, blockSize);
 
 		final Caches.RandomAccessibleLoader<T> loader =
-			new Caches.RandomAccessibleLoader<T>(Views.zeroMin(source));
+			new Caches.RandomAccessibleLoader<>(Views.zeroMin(source));
 
 		final T type = Util.getTypeFromInterval(source);
 

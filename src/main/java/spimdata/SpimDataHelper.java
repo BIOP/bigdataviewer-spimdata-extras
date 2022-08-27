@@ -58,10 +58,8 @@ public class SpimDataHelper {
 		AffineTransform3D at3d)
 	{
 		asd.getViewRegistrations().getViewRegistrations().values().forEach(
-			viewRegistraion -> {
-				viewRegistraion.preconcatenateTransform(new ViewTransformAffine(name,
-					at3d));
-			});
+			viewRegistration -> viewRegistration.preconcatenateTransform(
+				new ViewTransformAffine(name, at3d)));
 	}
 
 	public static void scale(AbstractSpimData<?> asd, String name, double scaleX,

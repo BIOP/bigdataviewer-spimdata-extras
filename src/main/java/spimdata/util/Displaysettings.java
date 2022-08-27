@@ -62,22 +62,6 @@ public class Displaysettings extends NamedEntity implements
 	}
 
 	/**
-	 * Get the unique id of this displaysettings
-	 */
-	@Override
-	public int getId() {
-		return super.getId();
-	}
-
-	/**
-	 * Get the name of this Display Settings Entity.
-	 */
-	@Override
-	public String getName() {
-		return super.getName();
-	}
-
-	/**
 	 * Set the name of this displaysettings (probably useless).
 	 */
 	@Override
@@ -107,8 +91,8 @@ public class Displaysettings extends NamedEntity implements
 
 		if (this.color != null) {
 			str += "color = ";
-			for (int i = 0; i < this.color.length; i++) {
-				str += this.color[i] + ", ";
+			for (int j : this.color) {
+				str += j + ", ";
 			}
 		}
 
@@ -127,7 +111,7 @@ public class Displaysettings extends NamedEntity implements
 	 * @param ds the displaysettings object which is mutated
 	 */
 	public static void GetDisplaySettingsFromCurrentConverter(
-		SourceAndConverter sac, Displaysettings ds)
+		SourceAndConverter<?> sac, Displaysettings ds)
 	{
 
 		// Color + min max
@@ -145,47 +129,7 @@ public class Displaysettings extends NamedEntity implements
 			System.err.println("Converter is of class :" + sac.getConverter()
 				.getClass().getSimpleName() + " -> Display settings cannot be stored.");
 		}
-		/*
-		if (SourceAndConverterServices
-		        .getSourceAndConverterService()
-		        .getMetadata(sac, BlendingMode.BLENDING_MODE )!=null) {
-		    // A projection mode is set
-		    ds.projectionMode = (String) (SourceAndConverterServices
-		            .getSourceAndConverterService()
-		            .getMetadata(sac, BlendingMode.BLENDING_MODE ));
-		}*/
 	}
-
-	/**
-	 * Stores display settings currently in use by the SourceAndConverter into the
-	 * link SpimData object
-	 * 
-	 * @param sac source
-	 */
-	/*public static void PushDisplaySettingsFromCurrentConverter(SourceAndConverter sac) {
-	    if (SourceAndConverterServices
-	            .getSourceAndConverterService()
-	            .getMetadata(sac, SourceAndConverterService.SPIM_DATA_INFO)==null) {
-	        System.err.println("No Linked SpimData Object -> Display settings cannot be stored.");
-	        return;
-	    }
-	
-	    int viewSetup =
-	            ((SourceAndConverterService.SpimDataInfo) SourceAndConverterServices
-	                    .getSourceAndConverterService()
-	                    .getMetadata(sac, SourceAndConverterService.SPIM_DATA_INFO)).setupId;
-	
-	    SourceAndConverterService.SpimDataInfo sdi = (SourceAndConverterService.SpimDataInfo) SourceAndConverterServices
-	            .getSourceAndConverterService()
-	            .getMetadata(sac, SourceAndConverterService.SPIM_DATA_INFO);
-	
-	    Displaysettings ds = new Displaysettings(viewSetup);
-	
-	    GetDisplaySettingsFromCurrentConverter(sac, ds);
-	
-	    ((BasicViewSetup)sdi.asd.getSequenceDescription().getViewSetups().get(viewSetup)).setAttribute(ds);
-	
-	}*/
 
 	/**
 	 * Apply the display settings to the SourceAndConverter object
@@ -194,7 +138,7 @@ public class Displaysettings extends NamedEntity implements
 	 * @param ds display settings object
 	 * @return for some reason, the projection mode of the display settings object
 	 */
-	public static String PullDisplaySettings(SourceAndConverter sac,
+	public static String PullDisplaySettings(SourceAndConverter<?> sac,
 		Displaysettings ds)
 	{
 
@@ -233,11 +177,11 @@ public class Displaysettings extends NamedEntity implements
 	 * @param sacs sources
 	 * @param ds display settings
 	 */
-	public static void applyDisplaysettings(SourceAndConverter[] sacs,
+	public static void applyDisplaysettings(SourceAndConverter<?>[] sacs,
 		Displaysettings ds)
 	{
 		if ((sacs != null) && (ds != null)) {
-			for (SourceAndConverter sac : sacs) {
+			for (SourceAndConverter<?> sac : sacs) {
 				applyDisplaysettings(sac, ds);
 			}
 		}
@@ -251,7 +195,7 @@ public class Displaysettings extends NamedEntity implements
 	 * @param sac source
 	 * @param ds display settings
 	 */
-	public static void applyDisplaysettings(SourceAndConverter sac,
+	public static void applyDisplaysettings(SourceAndConverter<?> sac,
 		Displaysettings ds)
 	{
 		if ((sac != null) && (ds != null)) {

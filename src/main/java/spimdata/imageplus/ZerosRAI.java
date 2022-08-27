@@ -29,15 +29,15 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.Sampler;
 import net.imglib2.type.numeric.NumericType;
 
-public class ZerosRAI<T extends NumericType> implements
+public class ZerosRAI<T extends NumericType<T>> implements
 	RandomAccessibleInterval<T>
 {
 
-	T t;
+	final T t;
 
-	long[] dimensions;
+	final long[] dimensions;
 
-	RandomAccess zerosRandomAccess;
+	final RandomAccess<T> zerosRandomAccess;
 
 	public ZerosRAI(T typeInstance, long[] dimensions) {
 		this.t = typeInstance;

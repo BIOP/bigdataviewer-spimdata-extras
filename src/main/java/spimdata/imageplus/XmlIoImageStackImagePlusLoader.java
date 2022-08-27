@@ -28,6 +28,9 @@ import mpicbg.spim.data.XmlHelpers;
 import mpicbg.spim.data.generic.sequence.AbstractSequenceDescription;
 import mpicbg.spim.data.generic.sequence.ImgLoaderIo;
 import mpicbg.spim.data.generic.sequence.XmlIoBasicImgLoader;
+import net.imglib2.img.basictypeaccess.array.ArrayDataAccess;
+import net.imglib2.type.NativeType;
+import net.imglib2.type.numeric.NumericType;
 import org.jdom2.Element;
 
 import java.io.File;
@@ -36,8 +39,8 @@ import static mpicbg.spim.data.XmlKeys.IMGLOADER_FORMAT_ATTRIBUTE_NAME;
 
 @ImgLoaderIo(format = "spimreconstruction.biop_imagestackimageplusloader",
 	type = ImageStackImageLoaderTimeShifted.class)
-public class XmlIoImageStackImagePlusLoader implements
-	XmlIoBasicImgLoader<ImageStackImageLoaderTimeShifted>
+public class XmlIoImageStackImagePlusLoader<T extends NumericType<T> & NativeType<T>, A extends ArrayDataAccess<A>>
+	implements XmlIoBasicImgLoader<ImageStackImageLoaderTimeShifted<T, A>>
 {
 
 	final public static String IMAGEPLUS_FILEPATH_TAG = "imageplus_filepath";
