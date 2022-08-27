@@ -19,6 +19,7 @@
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 package spimdata.imageplus;
 
 import java.util.ArrayList;
@@ -46,104 +47,115 @@ import mpicbg.spim.data.generic.sequence.ImgLoaderHint;
 import mpicbg.spim.data.generic.sequence.TypedBasicImgLoader;
 
 /**
- * ImageLoader for ImagePlus, non virtual
- * A timeshift can be specified compared to the origin
- *
- * see {@link VirtualStackImageLoaderTimeShifted} for more information
+ * ImageLoader for ImagePlus, non virtual A timeshift can be specified compared
+ * to the origin see {@link VirtualStackImageLoaderTimeShifted} for more
+ * information
  *
  * @param <T> type of the sources
  * @param <A> TODO understand what this is
  */
 
-public class ImageStackImageLoaderTimeShifted< T extends NumericType< T > & NativeType< T >, A extends ArrayDataAccess< A > > implements BasicImgLoader, TypedBasicImgLoader< T >
+public class ImageStackImageLoaderTimeShifted<T extends NumericType<T> & NativeType<T>, A extends ArrayDataAccess<A>>
+	implements BasicImgLoader, TypedBasicImgLoader<T>
 {
-    public static ImageStackImageLoaderTimeShifted< UnsignedByteType, ByteArray > createUnsignedByteInstance( final ImagePlus imp, int timeShift )
-    {
-        return new ImageStackImageLoaderTimeShifted<>( new UnsignedByteType(), imp, array -> new ByteArray( ( byte[] ) array ), timeShift );
-    }
 
-    public static ImageStackImageLoaderTimeShifted< UnsignedShortType, ShortArray > createUnsignedShortInstance( final ImagePlus imp, int timeShift )
-    {
-        return new ImageStackImageLoaderTimeShifted<>( new UnsignedShortType(), imp, array -> new ShortArray( ( short[] ) array ), timeShift );
-    }
+	public static ImageStackImageLoaderTimeShifted<UnsignedByteType, ByteArray>
+		createUnsignedByteInstance(final ImagePlus imp, int timeShift)
+	{
+		return new ImageStackImageLoaderTimeShifted<>(new UnsignedByteType(), imp,
+			array -> new ByteArray((byte[]) array), timeShift);
+	}
 
-    public static ImageStackImageLoaderTimeShifted< FloatType, FloatArray > createFloatInstance( final ImagePlus imp, int timeShift )
-    {
-        return new ImageStackImageLoaderTimeShifted<>( new FloatType(), imp, array -> new FloatArray( ( float[] ) array ), timeShift );
-    }
+	public static ImageStackImageLoaderTimeShifted<UnsignedShortType, ShortArray>
+		createUnsignedShortInstance(final ImagePlus imp, int timeShift)
+	{
+		return new ImageStackImageLoaderTimeShifted<>(new UnsignedShortType(), imp,
+			array -> new ShortArray((short[]) array), timeShift);
+	}
 
-    public static ImageStackImageLoaderTimeShifted< ARGBType, IntArray > createARGBInstance( final ImagePlus imp, int timeShift )
-    {
-        return new ImageStackImageLoaderTimeShifted<>( new ARGBType(), imp, array -> new IntArray( ( int[] ) array ), timeShift );
-    }
+	public static ImageStackImageLoaderTimeShifted<FloatType, FloatArray>
+		createFloatInstance(final ImagePlus imp, int timeShift)
+	{
+		return new ImageStackImageLoaderTimeShifted<>(new FloatType(), imp,
+			array -> new FloatArray((float[]) array), timeShift);
+	}
 
-    private final T type;
+	public static ImageStackImageLoaderTimeShifted<ARGBType, IntArray>
+		createARGBInstance(final ImagePlus imp, int timeShift)
+	{
+		return new ImageStackImageLoaderTimeShifted<>(new ARGBType(), imp,
+			array -> new IntArray((int[]) array), timeShift);
+	}
 
-    private final ImagePlus imp;
+	private final T type;
 
-    private final long[] dim;
+	private final ImagePlus imp;
 
-    private final ArrayList< SetupImgLoader > setupImgLoaders;
+	private final long[] dim;
 
-    private final Function< Object, A > wrapPixels;
+	private final ArrayList<SetupImgLoader> setupImgLoaders;
 
-    private final int timeShift;
+	private final Function<Object, A> wrapPixels;
 
-    public ImagePlus getImagePlus() {
-        return this.imp;
-    }
+	private final int timeShift;
 
-    public int getTimeShift() {
-        return timeShift;
-    }
+	public ImagePlus getImagePlus() {
+		return this.imp;
+	}
 
-    public ImageStackImageLoaderTimeShifted( final T type, final ImagePlus imp, final Function< Object, A > wrapPixels, int timeShift )
-    {
-        this.type = type;
-        this.imp = imp;
-        this.wrapPixels = wrapPixels;
-        this.dim = new long[] { imp.getWidth(), imp.getHeight(), imp.getNSlices() };
-        this.timeShift = timeShift;
-        final int numSetups = imp.getNChannels();
-        setupImgLoaders = new ArrayList<>();
-        for ( int setupId = 0; setupId < numSetups; ++setupId )
-            setupImgLoaders.add( new SetupImgLoader( setupId ) );
-    }
+	public int getTimeShift() {
+		return timeShift;
+	}
 
-    public class SetupImgLoader implements BasicSetupImgLoader< T >
-    {
-        private final int setupId;
+	public ImageStackImageLoaderTimeShifted(final T type, final ImagePlus imp,
+		final Function<Object, A> wrapPixels, int timeShift)
+	{
+		this.type = type;
+		this.imp = imp;
+		this.wrapPixels = wrapPixels;
+		this.dim = new long[] { imp.getWidth(), imp.getHeight(), imp.getNSlices() };
+		this.timeShift = timeShift;
+		final int numSetups = imp.getNChannels();
+		setupImgLoaders = new ArrayList<>();
+		for (int setupId = 0; setupId < numSetups; ++setupId)
+			setupImgLoaders.add(new SetupImgLoader(setupId));
+	}
 
-        public SetupImgLoader( final int setupId )
-        {
-            this.setupId = setupId;
-        }
+	public class SetupImgLoader implements BasicSetupImgLoader<T> {
 
-        @Override
-        public RandomAccessibleInterval< T > getImage( final int timepointId, final ImgLoaderHint... hints )
-        {
-            final int channel = setupId + 1;
-            final int frame = timepointId + 1 - timeShift;
-            final ArrayList< A > slices = new ArrayList<>();
-            for ( int slice = 1; slice <= dim[ 2 ]; ++slice )
-                slices.add( wrapPixels.apply( imp.getStack().getPixels( imp.getStackIndex( channel, slice, frame ) ) ) );
-            final PlanarImg< T, A > img = new PlanarImg<>( slices, dim, type.getEntitiesPerPixel() );
-            @SuppressWarnings( "unchecked" )
-            final NativeTypeFactory< T, ? super A > typeFactory = ( NativeTypeFactory< T, ? super A > ) type.getNativeTypeFactory();
-            img.setLinkedType( typeFactory.createLinkedType( img ) );
-            return img;
-        }
+		private final int setupId;
 
-        @Override
-        public T getImageType()
-        {
-            return type;
-        }
-    }
+		public SetupImgLoader(final int setupId) {
+			this.setupId = setupId;
+		}
 
-    @Override
-    public SetupImgLoader getSetupImgLoader( final int setupId )
-    {
-        return setupImgLoaders.get( setupId );
-    }
+		@Override
+		public RandomAccessibleInterval<T> getImage(final int timepointId,
+			final ImgLoaderHint... hints)
+		{
+			final int channel = setupId + 1;
+			final int frame = timepointId + 1 - timeShift;
+			final ArrayList<A> slices = new ArrayList<>();
+			for (int slice = 1; slice <= dim[2]; ++slice)
+				slices.add(wrapPixels.apply(imp.getStack().getPixels(imp.getStackIndex(
+					channel, slice, frame))));
+			final PlanarImg<T, A> img = new PlanarImg<>(slices, dim, type
+				.getEntitiesPerPixel());
+			@SuppressWarnings("unchecked")
+			final NativeTypeFactory<T, ? super A> typeFactory =
+				(NativeTypeFactory<T, ? super A>) type.getNativeTypeFactory();
+			img.setLinkedType(typeFactory.createLinkedType(img));
+			return img;
+		}
+
+		@Override
+		public T getImageType() {
+			return type;
+		}
+	}
+
+	@Override
+	public SetupImgLoader getSetupImgLoader(final int setupId) {
+		return setupImgLoaders.get(setupId);
+	}
 }

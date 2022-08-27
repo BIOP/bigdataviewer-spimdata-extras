@@ -19,6 +19,7 @@
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 package spimdata.imageplus;
 
 import net.imglib2.Interval;
@@ -28,140 +29,144 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.Sampler;
 import net.imglib2.type.numeric.NumericType;
 
-public class ZerosRAI<T extends NumericType> implements RandomAccessibleInterval<T> {
-    T t;
+public class ZerosRAI<T extends NumericType> implements
+	RandomAccessibleInterval<T>
+{
 
-    long[] dimensions;
+	T t;
 
-    RandomAccess zerosRandomAccess;
+	long[] dimensions;
 
-    public ZerosRAI( T typeInstance, long[] dimensions) {
-        this.t = typeInstance;
-        t.setZero();
-        this.dimensions = dimensions;
-        this.zerosRandomAccess = new ZerosRandomAccess();
-    }
+	RandomAccess zerosRandomAccess;
 
-    @Override
-    public long min(int d) {
-        return 0;
-    }
+	public ZerosRAI(T typeInstance, long[] dimensions) {
+		this.t = typeInstance;
+		t.setZero();
+		this.dimensions = dimensions;
+		this.zerosRandomAccess = new ZerosRandomAccess();
+	}
 
-    @Override
-    public long max(int d) {
-        return dimensions[d];
-    }
+	@Override
+	public long min(int d) {
+		return 0;
+	}
 
-    @Override
-    public RandomAccess<T> randomAccess() {
-        return zerosRandomAccess;
-    }
+	@Override
+	public long max(int d) {
+		return dimensions[d];
+	}
 
-    @Override
-    public RandomAccess<T> randomAccess(Interval interval) {
-        return zerosRandomAccess;
-    }
+	@Override
+	public RandomAccess<T> randomAccess() {
+		return zerosRandomAccess;
+	}
 
-    @Override
-    public int numDimensions() {
-        return dimensions.length;
-    }
+	@Override
+	public RandomAccess<T> randomAccess(Interval interval) {
+		return zerosRandomAccess;
+	}
 
-    public class ZerosRandomAccess implements RandomAccess<T> {
+	@Override
+	public int numDimensions() {
+		return dimensions.length;
+	}
 
-        @Override
-        public RandomAccess<T> copyRandomAccess() {
-            return new ZerosRandomAccess();
-        }
+	public class ZerosRandomAccess implements RandomAccess<T> {
 
-        @Override
-        public long getLongPosition(int d) {
-            return d;
-        }
+		@Override
+		public RandomAccess<T> copyRandomAccess() {
+			return new ZerosRandomAccess();
+		}
 
-        @Override
-        public void fwd(int d) {
+		@Override
+		public long getLongPosition(int d) {
+			return d;
+		}
 
-        }
+		@Override
+		public void fwd(int d) {
 
-        @Override
-        public void bck(int d) {
+		}
 
-        }
+		@Override
+		public void bck(int d) {
 
-        @Override
-        public void move(int distance, int d) {
+		}
 
-        }
+		@Override
+		public void move(int distance, int d) {
 
-        @Override
-        public void move(long distance, int d) {
+		}
 
-        }
+		@Override
+		public void move(long distance, int d) {
 
-        @Override
-        public void move(Localizable distance) {
+		}
 
-        }
+		@Override
+		public void move(Localizable distance) {
 
-        @Override
-        public void move(int[] distance) {
+		}
 
-        }
+		@Override
+		public void move(int[] distance) {
 
-        @Override
-        public void move(long[] distance) {
+		}
 
-        }
+		@Override
+		public void move(long[] distance) {
 
-        @Override
-        public void setPosition(Localizable position) {
+		}
 
-        }
+		@Override
+		public void setPosition(Localizable position) {
 
-        @Override
-        public void setPosition(int[] position) {
+		}
 
-        }
+		@Override
+		public void setPosition(int[] position) {
 
-        @Override
-        public void setPosition(long[] position) {
+		}
 
-        }
+		@Override
+		public void setPosition(long[] position) {
 
-        @Override
-        public void setPosition(int position, int d) {
+		}
 
-        }
+		@Override
+		public void setPosition(int position, int d) {
 
-        @Override
-        public void setPosition(long position, int d) {
+		}
 
-        }
+		@Override
+		public void setPosition(long position, int d) {
 
-        @Override
-        public int numDimensions() {
-            return dimensions.length;
-        }
+		}
 
-        @Override
-        public T get() {
-            return t;
-        }
+		@Override
+		public int numDimensions() {
+			return dimensions.length;
+		}
 
-        @Override
-        public Sampler<T> copy() {
-            return new Sampler<T>() {
-                @Override
-                public T get() {
-                    return t;
-                }
+		@Override
+		public T get() {
+			return t;
+		}
 
-                @Override
-                public Sampler<T> copy() {
-                    return this;
-                }
-            };
-        }
-    }
+		@Override
+		public Sampler<T> copy() {
+			return new Sampler<T>() {
+
+				@Override
+				public T get() {
+					return t;
+				}
+
+				@Override
+				public Sampler<T> copy() {
+					return this;
+				}
+			};
+		}
+	}
 }
