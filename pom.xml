@@ -5,13 +5,13 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>32.0.0-beta-4</version>
+		<version>32.0.0</version>
 		<relativePath />
 	</parent>
 
 	<groupId>ch.epfl.biop</groupId>
 	<artifactId>bigdataviewer-spimdata-extras</artifactId>
-	<version>0.1.7-SNAPSHOT</version>
+	<version>0.2.0-SNAPSHOT</version>
 
 	<name>Spimdata Extra Settings</name>
 	<description>Repo containing extra settings that can be stored in spimdata file format</description>
@@ -86,9 +86,6 @@
 		<scijava.app.directory>C:/Fiji_template</scijava.app.directory>
 		<license.excludes>**/resources/**</license.excludes>
 
-		<ui-behaviour.version>2.0.6</ui-behaviour.version>
-		<bigdataviewer-core.version>10.4.1</bigdataviewer-core.version>
-		<bigdataviewer-vistools.version>1.0.0-beta-30</bigdataviewer-vistools.version>
 		<!-- NB: Deploy releases to the SciJava Maven repository. -->
 		<releaseProfiles>sign,deploy-to-scijava</releaseProfiles>
 	</properties>
