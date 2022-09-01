@@ -32,6 +32,7 @@ import net.imglib2.type.numeric.ARGBType;
  * colored LUT + min max display also stores the projection mode
  */
 
+@SuppressWarnings("unused")
 public class Displaysettings extends NamedEntity implements
 	Comparable<Displaysettings>
 {
