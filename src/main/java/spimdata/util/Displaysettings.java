@@ -2,7 +2,7 @@
  * #%L
  * Repo containing extra settings that can be stored in spimdata file format
  * %%
- * Copyright (C) 2020 - 2022 EPFL
+ * Copyright (C) 2020 - 2023 EPFL
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
