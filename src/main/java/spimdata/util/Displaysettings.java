@@ -105,14 +105,26 @@ public class Displaysettings extends NamedEntity implements
 	}
 
 	/**
-	 * Stores display settings currently in use by the SourceAndConverter into the
-	 * link SpimData object
-	 * 
+	 * Deprecated: please use the correct case for the method
 	 * @param sac source
 	 * @param ds the displaysettings object which is mutated
 	 */
+	@Deprecated
 	public static void GetDisplaySettingsFromCurrentConverter(
 		SourceAndConverter<?> sac, Displaysettings ds)
+	{
+		getDisplaySettingsFromCurrentConverter(sac, ds);
+	}
+
+	/**
+	 * Stores display settings currently in use by the SourceAndConverter into the
+	 * link SpimData object
+	 *
+	 * @param sac source
+	 * @param ds the displaysettings object which is mutated
+	 */
+	public static void getDisplaySettingsFromCurrentConverter(
+			SourceAndConverter<?> sac, Displaysettings ds)
 	{
 
 		// Color + min max
@@ -121,53 +133,66 @@ public class Displaysettings extends NamedEntity implements
 			ds.setName("vs:" + ds.getId());
 			int colorCode = cc.getColor().get();
 			ds.color = new int[] { ARGBType.red(colorCode), ARGBType.green(colorCode),
-				ARGBType.blue(colorCode), ARGBType.alpha(colorCode) };
+					ARGBType.blue(colorCode), ARGBType.alpha(colorCode) };
 			ds.min = cc.getMin();
 			ds.max = cc.getMax();
 			ds.isSet = true;
 		}
 		else {
 			System.err.println("Converter is of class :" + sac.getConverter()
-				.getClass().getSimpleName() + " -> Display settings cannot be stored.");
+					.getClass().getSimpleName() + " -> Display settings cannot be stored.");
 		}
 	}
 
 	/**
 	 * Apply the display settings to the SourceAndConverter object
-	 * 
+	 *
 	 * @param sac source
 	 * @param ds display settings object
 	 * @return for some reason, the projection mode of the display settings object
 	 */
-	public static String PullDisplaySettings(SourceAndConverter<?> sac,
-		Displaysettings ds)
+	public static String pullDisplaySettings(SourceAndConverter<?> sac,
+											 Displaysettings ds)
 	{
 
 		if (ds.isSet) {
 			if (sac.getConverter() instanceof ColorConverter) {
 				ColorConverter cc = (ColorConverter) sac.getConverter();
 				cc.setColor(new ARGBType(ARGBType.rgba(ds.color[0], ds.color[1],
-					ds.color[2], ds.color[3])));
+						ds.color[2], ds.color[3])));
 				cc.setMin(ds.min);
 				cc.setMax(ds.max);
 				if (sac.asVolatile() != null) {
 					cc = (ColorConverter) sac.asVolatile().getConverter();
 					cc.setColor(new ARGBType(ARGBType.rgba(ds.color[0], ds.color[1],
-						ds.color[2], ds.color[3])));
+							ds.color[2], ds.color[3])));
 					cc.setMin(ds.min);
 					cc.setMax(ds.max);
 				}
 			}
 			else {
 				System.err.println("Converter is of class :" + sac.getConverter()
-					.getClass().getSimpleName() +
-					" -> Display settings cannot be reapplied.");
+						.getClass().getSimpleName() +
+						" -> Display settings cannot be reapplied.");
 			}
 
 			return ds.projectionMode;
 		}
 
 		return null;
+	}
+
+	/**
+	 * Deprecated: please use the correct case for the method
+	 * @param sac source
+	 * @param ds display settings object
+	 * @return for some reason, the projection mode of the display settings object
+	 */
+	@Deprecated
+	public static String PullDisplaySettings(SourceAndConverter<?> sac,
+		Displaysettings ds)
+	{
+		return pullDisplaySettings(sac, ds);
 	}
 
 	/**
